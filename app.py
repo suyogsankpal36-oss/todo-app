@@ -9,10 +9,7 @@ from flask_sqlalchemy import (
     SQLAlchemy
 )
 
-from datetime import (
-    datetime
-)
-
+from datetime import datetime
 import os
 
 
@@ -39,11 +36,12 @@ app.config[
     'SQLALCHEMY_TRACK_MODIFICATIONS'
 ] = False
 
+
 db = SQLAlchemy(app)
 
 
 # ==========================
-# DATABASE MODEL
+# TASK MODEL
 # ==========================
 class Task(db.Model):
 
@@ -75,7 +73,6 @@ class Task(db.Model):
     def to_dict(self):
 
         return {
-
             "id":
             self.id,
 
@@ -96,6 +93,13 @@ class Task(db.Model):
 
 
 # ==========================
+# CREATE DB TABLES
+# ==========================
+with app.app_context():
+    db.create_all()
+
+
+# ==========================
 # HOME PAGE
 # ==========================
 @app.route('/')
@@ -107,7 +111,7 @@ def home():
 
 
 # ==========================
-# GET ALL TASKS
+# GET TASKS
 # ==========================
 @app.route(
     '/api/tasks',
@@ -123,12 +127,10 @@ def get_tasks():
         .all()
     )
 
-    return jsonify(
-        [
-            task.to_dict()
-            for task in tasks
-        ]
-    )
+    return jsonify([
+        task.to_dict()
+        for task in tasks
+    ])
 
 
 # ==========================
@@ -140,7 +142,14 @@ def get_tasks():
 )
 def add_task():
 
-    data = request.json
+    data = request.get_json()
+
+    if not data:
+
+        return jsonify({
+            "message":
+            "No data received"
+        }), 400
 
     title = data.get(
         'title'
@@ -156,27 +165,21 @@ def add_task():
     ):
 
         return jsonify({
-
-            'message':
-            'All fields are required'
-
+            "message":
+            "All fields required"
         }), 400
 
     task = Task(
-
         title=title,
-        description=
-        description
+        description=description
     )
 
     db.session.add(task)
     db.session.commit()
 
     return jsonify({
-
-        'message':
-        'Task Added Successfully'
-
+        "message":
+        "Task Added"
     })
 
 
@@ -197,13 +200,11 @@ def update_task(id):
     if not task:
 
         return jsonify({
-
-            'message':
-            'Task not found'
-
+            "message":
+            "Task not found"
         }), 404
 
-    data = request.json
+    data = request.get_json()
 
     task.title = data.get(
         'title',
@@ -224,10 +225,8 @@ def update_task(id):
     db.session.commit()
 
     return jsonify({
-
-        'message':
-        'Task Updated'
-
+        "message":
+        "Task updated"
     })
 
 
@@ -248,30 +247,23 @@ def delete_task(id):
     if not task:
 
         return jsonify({
-
-            'message':
-            'Task not found'
-
+            "message":
+            "Task not found"
         }), 404
 
     db.session.delete(task)
     db.session.commit()
 
     return jsonify({
-
-        'message':
-        'Task Deleted'
-
+        "message":
+        "Task deleted"
     })
 
 
 # ==========================
 # MAIN
 # ==========================
-if __name__ == '__main__':
-
-    with app.app_context():
-        db.create_all()
+if __name__ == "__main__":
 
     port = int(
         os.environ.get(
