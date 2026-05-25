@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# Database path
+# Database
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(BASE_DIR, "todo.db")
 
@@ -32,7 +32,6 @@ class Task(db.Model):
         }
 
 
-# Create DB
 with app.app_context():
     db.create_all()
 
@@ -61,15 +60,12 @@ def add_task():
     if not title or not description:
         return jsonify({"message": "All fields required"}), 400
 
-    task = Task(
-        title=title,
-        description=description
-    )
+    task = Task(title=title, description=description)
 
     db.session.add(task)
     db.session.commit()
 
-    return jsonify({"message": "Task added"})
+    return jsonify({"message": "Task Added"})
 
 
 @app.route("/api/tasks/<int:id>", methods=["PUT"])
@@ -92,7 +88,7 @@ def update_task(id):
 
     db.session.commit()
 
-    return jsonify({"message": "Updated"})
+    return jsonify({"message": "Task updated"})
 
 
 @app.route("/api/tasks/<int:id>", methods=["DELETE"])
@@ -105,8 +101,12 @@ def delete_task(id):
     db.session.delete(task)
     db.session.commit()
 
-    return jsonify({"message": "Deleted"})
+    return jsonify({"message": "Task deleted"})
 
 
-# Vercel needs this
-app = app
+# IMPORTANT FOR VERCEL
+application = app
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
