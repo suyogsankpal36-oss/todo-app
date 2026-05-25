@@ -5,9 +5,12 @@ import os
 
 app = Flask(__name__)
 
-# Database
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-db_path = os.path.join(BASE_DIR, "todo.db")
+# FIX FOR VERCEL SQLITE
+if os.environ.get("VERCEL"):
+    db_path = "/tmp/todo.db"
+else:
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(BASE_DIR, "todo.db")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -57,10 +60,7 @@ def add_task():
     if not title or not description:
         return jsonify({"error": "All fields required"}), 400
 
-    task = Task(
-        title=title,
-        description=description
-    )
+    task = Task(title=title, description=description)
 
     db.session.add(task)
     db.session.commit()
@@ -81,5 +81,4 @@ def delete_task(id):
     return jsonify({"message": "Deleted"})
 
 
-# THIS LINE IS IMPORTANT FOR VERCEL
 app = app
