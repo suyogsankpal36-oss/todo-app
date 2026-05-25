@@ -1,24 +1,13 @@
-from flask import (
-    Flask,
-    render_template,
-    request,
-    jsonify
-)
-
-from flask_sqlalchemy import (
-    SQLAlchemy
-)
-
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
 
-
 app = Flask(__name__)
 
-
-# ==========================
-# DATABASE CONFIG
-# ==========================
+# ======================================
+# DATABASE CONFIG (VERCEL SAFE)
+# ======================================
 BASE_DIR = os.path.abspath(
     os.path.dirname(__file__)
 )
@@ -29,20 +18,19 @@ db_path = os.path.join(
 )
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'
+    "SQLALCHEMY_DATABASE_URI"
 ] = f"sqlite:///{db_path}"
 
 app.config[
-    'SQLALCHEMY_TRACK_MODIFICATIONS'
+    "SQLALCHEMY_TRACK_MODIFICATIONS"
 ] = False
-
 
 db = SQLAlchemy(app)
 
 
-# ==========================
+# ======================================
 # TASK MODEL
-# ==========================
+# ======================================
 class Task(db.Model):
 
     id = db.Column(
@@ -92,30 +80,30 @@ class Task(db.Model):
         }
 
 
-# ==========================
-# CREATE DB TABLES
-# ==========================
+# ======================================
+# CREATE DATABASE TABLES
+# ======================================
 with app.app_context():
     db.create_all()
 
 
-# ==========================
+# ======================================
 # HOME PAGE
-# ==========================
-@app.route('/')
+# ======================================
+@app.route("/")
 def home():
 
     return render_template(
-        'index.html'
+        "index.html"
     )
 
 
-# ==========================
-# GET TASKS
-# ==========================
+# ======================================
+# GET ALL TASKS
+# ======================================
 @app.route(
-    '/api/tasks',
-    methods=['GET']
+    "/api/tasks",
+    methods=["GET"]
 )
 def get_tasks():
 
@@ -133,12 +121,12 @@ def get_tasks():
     ])
 
 
-# ==========================
+# ======================================
 # ADD TASK
-# ==========================
+# ======================================
 @app.route(
-    '/api/tasks',
-    methods=['POST']
+    "/api/tasks",
+    methods=["POST"]
 )
 def add_task():
 
@@ -152,11 +140,11 @@ def add_task():
         }), 400
 
     title = data.get(
-        'title'
+        "title"
     )
 
     description = data.get(
-        'description'
+        "description"
     )
 
     if (
@@ -166,7 +154,7 @@ def add_task():
 
         return jsonify({
             "message":
-            "All fields required"
+            "All fields are required"
         }), 400
 
     task = Task(
@@ -179,16 +167,16 @@ def add_task():
 
     return jsonify({
         "message":
-        "Task Added"
+        "Task added successfully"
     })
 
 
-# ==========================
+# ======================================
 # UPDATE TASK
-# ==========================
+# ======================================
 @app.route(
-    '/api/tasks/<int:id>',
-    methods=['PUT']
+    "/api/tasks/<int:id>",
+    methods=["PUT"]
 )
 def update_task(id):
 
@@ -207,35 +195,35 @@ def update_task(id):
     data = request.get_json()
 
     task.title = data.get(
-        'title',
+        "title",
         task.title
     )
 
     task.description = data.get(
-        'description',
+        "description",
         task.description
     )
 
-    if 'completed' in data:
+    if "completed" in data:
 
         task.completed = data[
-            'completed'
+            "completed"
         ]
 
     db.session.commit()
 
     return jsonify({
         "message":
-        "Task updated"
+        "Task updated successfully"
     })
 
 
-# ==========================
+# ======================================
 # DELETE TASK
-# ==========================
+# ======================================
 @app.route(
-    '/api/tasks/<int:id>',
-    methods=['DELETE']
+    "/api/tasks/<int:id>",
+    methods=["DELETE"]
 )
 def delete_task(id):
 
@@ -256,13 +244,19 @@ def delete_task(id):
 
     return jsonify({
         "message":
-        "Task deleted"
+        "Task deleted successfully"
     })
 
 
-# ==========================
-# MAIN
-# ==========================
+# ======================================
+# VERCEL ENTRY POINT
+# ======================================
+app = app
+
+
+# ======================================
+# LOCAL RUN
+# ======================================
 if __name__ == "__main__":
 
     port = int(
@@ -274,5 +268,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=port
+        port=port,
+        debug=True
     )
