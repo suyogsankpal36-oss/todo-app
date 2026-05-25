@@ -51,44 +51,21 @@ def get_tasks():
 def add_task():
     data = request.get_json()
 
-    if not data:
-        return jsonify({"message": "No data"}), 400
-
     title = data.get("title")
     description = data.get("description")
 
     if not title or not description:
-        return jsonify({"message": "All fields required"}), 400
+        return jsonify({"error": "All fields required"}), 400
 
-    task = Task(title=title, description=description)
+    task = Task(
+        title=title,
+        description=description
+    )
 
     db.session.add(task)
     db.session.commit()
 
-    return jsonify({"message": "Task Added"})
-
-
-@app.route("/api/tasks/<int:id>", methods=["PUT"])
-def update_task(id):
-    task = db.session.get(Task, id)
-
-    if not task:
-        return jsonify({"message": "Task not found"}), 404
-
-    data = request.get_json()
-
-    task.title = data.get("title", task.title)
-    task.description = data.get(
-        "description",
-        task.description
-    )
-
-    if "completed" in data:
-        task.completed = data["completed"]
-
-    db.session.commit()
-
-    return jsonify({"message": "Task updated"})
+    return jsonify({"message": "Task added"})
 
 
 @app.route("/api/tasks/<int:id>", methods=["DELETE"])
@@ -96,17 +73,13 @@ def delete_task(id):
     task = db.session.get(Task, id)
 
     if not task:
-        return jsonify({"message": "Task not found"}), 404
+        return jsonify({"error": "Task not found"}), 404
 
     db.session.delete(task)
     db.session.commit()
 
-    return jsonify({"message": "Task deleted"})
+    return jsonify({"message": "Deleted"})
 
 
-# IMPORTANT FOR VERCEL
-application = app
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+# THIS LINE IS IMPORTANT FOR VERCEL
+app = app
