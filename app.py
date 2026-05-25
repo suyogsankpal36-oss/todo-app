@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# FIX FOR VERCEL SQLITE
+# SQLite Fix for Vercel
 if os.environ.get("VERCEL"):
     db_path = "/tmp/todo.db"
 else:
@@ -18,6 +18,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
+# ==========================
+# MODEL
+# ==========================
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
@@ -39,17 +42,26 @@ with app.app_context():
     db.create_all()
 
 
+# ==========================
+# HOME
+# ==========================
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# ==========================
+# GET TASKS
+# ==========================
 @app.route("/api/tasks", methods=["GET"])
 def get_tasks():
     tasks = Task.query.order_by(Task.created_at.desc()).all()
     return jsonify([task.to_dict() for task in tasks])
 
 
+# ==========================
+# ADD TASK
+# ==========================
 @app.route("/api/tasks", methods=["POST"])
 def add_task():
     data = request.get_json()
@@ -58,27 +70,82 @@ def add_task():
     description = data.get("description")
 
     if not title or not description:
-        return jsonify({"error": "All fields required"}), 400
+        return jsonify({
+            "error": "All fields required"
+        }), 400
 
-    task = Task(title=title, description=description)
+    task = Task(
+        title=title,
+        description=description
+    )
 
     db.session.add(task)
     db.session.commit()
 
-    return jsonify({"message": "Task added"})
+    return jsonify({
+        "message": "Task added"
+    })
 
 
-@app.route("/api/tasks/<int:id>", methods=["DELETE"])
-def delete_task(id):
+# ==========================
+# UPDATE TASK
+# ==========================
+@app.route("/api/tasks/<int:id>", methods=["PUT"])
+def update_task(id):
+
     task = db.session.get(Task, id)
 
     if not task:
-        return jsonify({"error": "Task not found"}), 404
+        return jsonify({
+            "error": "Task not found"
+        }), 404
+
+    data = request.get_json()
+
+    task.title = data.get(
+        "title",
+        task.title
+    )
+
+    task.description = data.get(
+        "description",
+        task.description
+    )
+
+    task.completed = data.get(
+        "completed",
+        task.completed
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Task updated"
+    })
+
+
+# ==========================
+# DELETE TASK
+# ==========================
+@app.route("/api/tasks/<int:id>", methods=["DELETE"])
+def delete_task(id):
+
+    task = db.session.get(Task, id)
+
+    if not task:
+        return jsonify({
+            "error": "Task not found"
+        }), 404
 
     db.session.delete(task)
     db.session.commit()
 
-    return jsonify({"message": "Deleted"})
+    return jsonify({
+        "message": "Deleted"
+    })
 
 
 app = app
+
+if __name__ == "__main__":
+    app.run(debug=True)

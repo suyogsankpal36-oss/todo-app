@@ -1,8 +1,7 @@
 const apiURL = "/api/tasks";
 
-// ==========================
+
 // LOAD TASKS
-// ==========================
 async function loadTasks() {
 
     const response = await fetch(apiURL);
@@ -25,9 +24,7 @@ async function loadTasks() {
 
     if (tasks.length === 0) {
         container.innerHTML = `
-        <div class="empty-message">
-            No Tasks Available 🚀
-        </div>
+        <h4>No Tasks Available 🚀</h4>
         `;
         return;
     }
@@ -35,94 +32,71 @@ async function loadTasks() {
     tasks.forEach(task => {
 
         container.innerHTML += `
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-4">
 
-            <div class="card shadow-lg task-card
-            ${task.completed ?
-            'completed-task' : ''}">
+            <div class="card p-3 shadow">
 
-                <div class="card-body">
+                <div class="d-flex justify-content-between">
 
-                    <div class="d-flex
-                    justify-content-between">
+                    <h4>
+                        ${task.title}
+                    </h4>
 
-                        <h5 class="
-                        ${task.completed ?
-                        'completed-text' : ''}
-                        ">
-                            ${task.title}
-                        </h5>
-
-                        <span class="badge
-                        ${task.completed ?
-                        'bg-success' :
-                        'bg-warning text-dark'}
-                        status-badge">
-
-                        ${task.completed ?
-                        'Completed' :
-                        'Pending'}
-
-                        </span>
-
-                    </div>
-
-                    <p class="
-                    mt-3
+                    <span class="badge
                     ${task.completed ?
-                    'completed-text' : ''}
-                    ">
-                        ${task.description}
-                    </p>
+                    'bg-success' :
+                    'bg-warning'}">
 
-                    <p class="task-time">
-                        Created:
-                        ${task.created_at}
-                    </p>
+                    ${task.completed ?
+                    'Completed' :
+                    'Pending'}
 
-                    <div class="d-flex
-                    gap-2 mt-3">
+                    </span>
 
-                        <button
-                        class="btn btn-success
-                        action-btn"
-                        onclick="toggleTask(
-                        ${task.id},
-                        ${task.completed}
-                        )">
+                </div>
 
-                        <i class="bi
-                        bi-check-circle"></i>
+                <p class="mt-3">
+                    ${task.description}
+                </p>
 
-                        </button>
+                <small>
+                    ${task.created_at}
+                </small>
 
-                        <button
-                        class="btn btn-info
-                        text-white action-btn"
-                        onclick="editTask(
-                        ${task.id},
-                        '${task.title}',
-                        \`${task.description}\`
-                        )">
+                <div class="mt-3 d-flex gap-2">
 
-                        <i class="bi
-                        bi-pencil-square"></i>
+                    <button
+                    class="btn btn-success"
+                    onclick="toggleTask(
+                    ${task.id},
+                    ${task.completed}
+                    )">
 
-                        </button>
+                    ✔
 
-                        <button
-                        class="btn btn-danger
-                        action-btn"
-                        onclick="deleteTask(
-                        ${task.id}
-                        )">
+                    </button>
 
-                        <i class="bi
-                        bi-trash"></i>
+                    <button
+                    class="btn btn-info"
+                    onclick="editTask(
+                    ${task.id},
+                    '${task.title}',
+                    \`${task.description}\`
+                    )">
 
-                        </button>
+                    ✏
 
-                    </div>
+                    </button>
+
+                    <button
+                    class="btn btn-danger"
+                    onclick="deleteTask(
+                    ${task.id}
+                    )">
+
+                    🗑
+
+                    </button>
 
                 </div>
 
@@ -134,9 +108,7 @@ async function loadTasks() {
 }
 
 
-// ==========================
 // ADD TASK
-// ==========================
 async function addTask() {
 
     const title =
@@ -182,32 +154,7 @@ async function addTask() {
 }
 
 
-// ==========================
-// DELETE TASK
-// ==========================
-async function deleteTask(id) {
-
-    const confirmDelete =
-        confirm(
-            "Delete this task?"
-        );
-
-    if (!confirmDelete) return;
-
-    await fetch(
-        `${apiURL}/${id}`,
-        {
-            method: "DELETE"
-        }
-    );
-
-    loadTasks();
-}
-
-
-// ==========================
 // COMPLETE TASK
-// ==========================
 async function toggleTask(
     id,
     completed
@@ -234,19 +181,32 @@ async function toggleTask(
 }
 
 
-// ==========================
+// DELETE TASK
+async function deleteTask(id) {
+
+    await fetch(
+        `${apiURL}/${id}`,
+        {
+            method: "DELETE"
+        }
+    );
+
+    loadTasks();
+}
+
+
 // EDIT TASK
-// ==========================
 async function editTask(
     id,
     oldTitle,
     oldDescription
 ) {
 
-    const title = prompt(
-        "Edit Title",
-        oldTitle
-    );
+    const title =
+        prompt(
+            "Edit Title",
+            oldTitle
+        );
 
     if (!title) return;
 
@@ -278,6 +238,4 @@ async function editTask(
     loadTasks();
 }
 
-
-// Auto Load
 loadTasks();
